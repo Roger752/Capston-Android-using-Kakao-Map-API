@@ -12,12 +12,9 @@ import android.view.ViewGroup;
 
 import com.codesample.stemplerun.databinding.ActivityMainBinding;
 
-
-import net.daum.mf.map.api.CameraUpdateFactory;
 import net.daum.mf.map.api.MapCircle;
 import net.daum.mf.map.api.MapPOIItem;
 import net.daum.mf.map.api.MapPoint;
-import net.daum.mf.map.api.MapPointBounds;
 import net.daum.mf.map.api.MapView;
 
 
@@ -26,9 +23,19 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     private ActivityMainBinding binding;
     private MapView mapView;
     private MapPOIItem marker;
-    private MapCircle mapCircle;
     private ViewGroup mapViewContainer;
-    private MapPoint mapPoint;
+
+    // 위도, 경도 변수
+    private double myLatitude;
+    private double myLongitude;
+
+    private MapCircle cultureRange;
+
+    // 원의 위도, 경도 변수 및 원의 반지름 범위
+    private double circleLatitude;
+    private double circleLongitude;
+    private int circleRadius;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,15 +58,22 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         }
 
         mapView = new MapView(this);
+        // POIItem 이벤트 리스너 등록
         mapView.setPOIItemEventListener(this);
+        // CurrentLocation 이벤트 리스너 등록
+        mapView.setCurrentLocationEventListener(this);
 
         mapViewContainer = (ViewGroup) findViewById(R.id.map_view);
+        // 지도 화면에 등록
         mapViewContainer.addView(mapView);
 
 
-        // 트래킹 모드 On, 나침반 기능 Off
+        // 트래킹 모드 On, 나침반 기능 Off (현재 내 위치 추적 가능 On/Off)
         mapView.setCurrentLocationTrackingMode(MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading);
         mapView.setShowCurrentLocationMarker(true);
+        Log.i("CHECK", "mapView.getMapPointBounds : " + mapView.getPOIItems());
+
+        marker = new MapPOIItem();
         Log.i("SHOWING", mapView.isShowingCurrentLocationMarker() + "");
 
         // Generate Kakao Hash Key
@@ -76,54 +90,90 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             Log.e("name not found", e.toString());
         }*/
 
-        MapPOIItem marker = new MapPOIItem();
-        marker.setItemName("Default Marker");
-        marker.setTag(0);
-        marker.setMapPoint(MapPoint.mapPointWithGeoCoord(35.893244, 128.621894));
-        marker.setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
-        marker.setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
-
-        mapView.addPOIItem(marker);
-
-        MapCircle circle1 = new MapCircle(
+        // 지도에 Circle 생성
+        cultureRange = new MapCircle(
                 MapPoint.mapPointWithGeoCoord(35.893098, 128.621687), // center
                 10, // radius
                 Color.argb(128, 255, 0, 0), // strokeColor
                 Color.argb(128, 0, 255, 0) // fillColor
         );
-        circle1.setTag(1234);
-        mapView.addCircle(circle1);
+        cultureRange.setTag(1234);
+        // 지도에 원형 생성
+        mapView.addCircle(cultureRange);
 
-        MapCircle circle2 = new MapCircle(
+        Log.i("MAIN", "CircleCenterPoint : " + cultureRange.getCenter().getMapPointGeoCoord().latitude + ", "
+                + cultureRange.getCenter().getMapPointGeoCoord().longitude);
+
+        circleLatitude = cultureRange.getCenter().getMapPointGeoCoord().latitude;
+        circleLongitude = cultureRange.getCenter().getMapPointGeoCoord().longitude;
+        circleRadius = cultureRange.getRadius();
+
+        /*MapCircle circle2 = new MapCircle(
                 MapPoint.mapPointWithGeoCoord(35.896280, 128.622049), // center
                 1000, // radius
                 Color.argb(128, 255, 0, 0), // strokeColor
                 Color.argb(128, 255, 255, 0) // fillColor
         );
         circle2.setTag(5678);
-//        mapView.addCircle(circle2);
+        mapView.addCircle(circle2);
 
-// 지도뷰의 중심좌표와 줌레벨을 Circle이 모두 나오도록 조정.
+        // 지도뷰의 중심좌표와 줌레벨을 Circle이 모두 나오도록 조정.
         MapPointBounds[] mapPointBoundsArray = { circle1.getBound(), circle2.getBound() };
         MapPointBounds mapPointBounds = new MapPointBounds(mapPointBoundsArray);
         int padding = 50; // px
-        mapView.moveCamera(CameraUpdateFactory.newMapPointBounds(mapPointBounds, padding));
+        mapView.moveCamera(CameraUpdateFactory.newMapPointBounds(mapPointBounds, padding));*/
 
     }
 
     @Override
     public void onCurrentLocationUpdate(MapView mapView, MapPoint mapPoint, float v) {
-        Log.i("POINT", "mappoint : " + mapPoint);
-        marker = new MapPOIItem();
-        marker.setMapPoint(mapPoint);
-        marker.setItemName("Me");
-        marker.setTag(0);
-
-        marker.setMarkerType(MapPOIItem.MarkerType.BluePin);
-        marker.setSelectedMarkerType(MapPOIItem.MarkerType.RedPin);
-
-        mapView.addPOIItem(marker);
         Log.i("MAIN", "marker : " + marker);
+
+        if(marker == null) {
+            marker.setMapPoint(mapPoint);
+            marker.setItemName("Me");
+            marker.setTag(0);
+            marker.setMarkerType(MapPOIItem.MarkerType.BluePin);
+            marker.setSelectedMarkerType(MapPOIItem.MarkerType.RedPin);
+
+            // 마커 등록
+            mapView.addPOIItem(marker);
+        }
+        else if(marker != null && marker.getTag() == 0) {
+            // 기존 마커 제거
+            mapView.removePOIItem(marker);
+
+            marker.setMapPoint(mapPoint);
+            marker.setItemName("Me");
+            marker.setTag(0);
+            marker.setMarkerType(MapPOIItem.MarkerType.BluePin);
+            marker.setSelectedMarkerType(MapPOIItem.MarkerType.RedPin);
+
+            // 마커 등록
+            mapView.addPOIItem(marker);
+        }
+
+        Log.i("MAIN", "getAlpha : " + marker.getAlpha() + ", getRotation : " + marker.getRotation()
+                + ", getMapPoint : " + marker.getMapPoint().getMapPointGeoCoord().latitude + ", " + marker.getMapPoint().getMapPointGeoCoord().longitude);
+
+
+        myLatitude = marker.getMapPoint().getMapPointGeoCoord().latitude;
+        myLongitude = marker.getMapPoint().getMapPointGeoCoord().longitude;
+
+        // x^2 + y^2 = r^2
+        /*Log.i("MAIN", "myLatitude : " + Math.floor((myLatitude * 10000) / 10000.0) + " ,myLongitude : " + String.format("%,5f",myLongitude)
+                + " ,circleLatitude : " + circleLatitude + " ,circleLongitude : " + circleLongitude/10000.0
+                + " ,circleRadius : " + circleRadius);*/
+        Log.i("MAIN", Math.pow( Double.parseDouble(String.format("%,5f", (myLatitude - circleLatitude))), 2) + ", "
+                + Math.pow( Double.parseDouble(String.format("%,5f", (myLongitude - circleLongitude))), 2));
+        if(Math.pow(circleRadius, 2) >= Math.pow( Double.parseDouble(String.format("%,5f", (myLatitude - circleLatitude))), 2)
+                + Math.pow( Double.parseDouble(String.format("%,5f", (myLongitude - circleLongitude))), 2) ) {
+            Log.i("MAIN", "Circle Contain Me");
+        }
+        else {
+            Log.i("MAIN", "Circle doesn't Contain me");
+        }
+
     }
 
     @Override
