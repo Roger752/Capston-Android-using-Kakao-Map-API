@@ -10,38 +10,52 @@
         android:id="@+id/map_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/button"
+        android:layout_marginTop="128dp"
+        app:layout_constraintBottom_toTopOf="@+id/buttonHint"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="@+id/textViewProblem">
 
     </RelativeLayout>
 
-    <TextView
-        android:id="@+id/textViewLongitude"
+    <Button
+        android:id="@+id/buttonHint"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Longitude"
+        android:layout_marginBottom="128dp"
+        android:text="힌트"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/button" />
+        app:layout_constraintTop_toBottomOf="@+id/map_view" />
 
     <TextView
-        android:id="@+id/textViewLatitude"
+        android:id="@+id/textViewHint"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:text="Latitude"
-        app:layout_constraintStart_toEndOf="@+id/textViewLongitude"
-        app:layout_constraintTop_toTopOf="@id/textViewLongitude" />
+        app:layout_constraintStart_toEndOf="@+id/buttonHint"
+        app:layout_constraintTop_toTopOf="@+id/buttonHint" />
+
+    <TextView
+        android:id="@+id/textViewProblem"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/buttonNext"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Button"
+        android:text="다음"
+        android:textSize="17sp"
+        android:textStyle="bold"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/textViewLatitude"
-        app:layout_constraintTop_toBottomOf="@+id/map_view" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

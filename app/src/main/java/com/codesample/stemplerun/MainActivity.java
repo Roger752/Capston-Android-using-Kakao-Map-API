@@ -8,7 +8,9 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.codesample.stemplerun.databinding.ActivityMainBinding;
 
@@ -25,6 +27,9 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     private MapPOIItem marker;
     private ViewGroup mapViewContainer;
 
+    // 스토리 문제 관련 변수
+    private String problem = "문제 1\n유관순 열사가 우리나라를 되찾기 위해\n투신을 다한 장소를 찾아가보세요";
+
     // 위도, 경도 변수
     private double myLatitude;
     private double myLongitude;
@@ -35,6 +40,22 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     private double circleLatitude;
     private double circleLongitude;
     private int circleRadius;
+
+    // 버튼 관련 변수 및 리스너
+    private int buttonHintCheck = 0;
+    private View.OnClickListener clickListener = v -> {
+        if(v.getId() == R.id.buttonHint) {
+            if(buttonHintCheck % 2 == 0) {
+                binding.textViewHint.setText("힌트");
+                buttonHintCheck++;
+            }
+            else {
+                binding.textViewHint.setText("");
+                buttonHintCheck++;
+            }
+
+        }
+    };
 
 
     @Override
@@ -63,9 +84,15 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         // CurrentLocation 이벤트 리스너 등록
         mapView.setCurrentLocationEventListener(this);
 
+        // 버튼 리스너 등록
+        binding.buttonHint.setOnClickListener(clickListener);
+
         mapViewContainer = (ViewGroup) findViewById(R.id.map_view);
         // 지도 화면에 등록
         mapViewContainer.addView(mapView);
+
+        // 스토리 관련 문제
+        binding.textViewProblem.setText(problem);
 
 
         // 트래킹 모드 On, 나침반 기능 Off (현재 내 위치 추적 가능 On/Off)
@@ -92,8 +119,8 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
         // 지도에 Circle 생성
         cultureRange = new MapCircle(
-                MapPoint.mapPointWithGeoCoord(35.893098, 128.621687), // center
-                10, // radius
+                MapPoint.mapPointWithGeoCoord(35.896401, 128.620465), // center
+                25, // radius
                 Color.argb(128, 255, 0, 0), // strokeColor
                 Color.argb(128, 0, 255, 0) // fillColor
         );
@@ -153,8 +180,8 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             mapView.addPOIItem(marker);
         }
 
-        Log.i("MAIN", "getAlpha : " + marker.getAlpha() + ", getRotation : " + marker.getRotation()
-                + ", getMapPoint : " + marker.getMapPoint().getMapPointGeoCoord().latitude + ", " + marker.getMapPoint().getMapPointGeoCoord().longitude);
+        //Log.i("MAIN", "getAlpha : " + marker.getAlpha() + ", getRotation : " + marker.getRotation()
+        //        + ", getMapPoint : " + marker.getMapPoint().getMapPointGeoCoord().latitude + ", " + marker.getMapPoint().getMapPointGeoCoord().longitude);
 
 
         myLatitude = marker.getMapPoint().getMapPointGeoCoord().latitude;
@@ -166,9 +193,9 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                 + " ,circleRadius : " + circleRadius);*/
         Log.i("MAIN", Math.pow( Double.parseDouble(String.format("%,5f", (myLatitude - circleLatitude))), 2) + ", "
                 + Math.pow( Double.parseDouble(String.format("%,5f", (myLongitude - circleLongitude))), 2));
-        if(Math.pow(circleRadius, 2) >= Math.pow( Double.parseDouble(String.format("%,5f", (myLatitude - circleLatitude))), 2)
+        if(Math.pow(circleRadius * 0.00001, 2) >= Math.pow( Double.parseDouble(String.format("%,5f", (myLatitude - circleLatitude))), 2)
                 + Math.pow( Double.parseDouble(String.format("%,5f", (myLongitude - circleLongitude))), 2) ) {
-            Log.i("MAIN", "Circle Contain Me");
+            Toast.makeText(this, "원 진입", Toast.LENGTH_SHORT).show();
         }
         else {
             Log.i("MAIN", "Circle doesn't Contain me");
